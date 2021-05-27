@@ -1,0 +1,114 @@
+- name: copy ca-config.json
+  copy:
+    src: files/CA-config
+    dest: /root/
+    owner: root
+    group: root
+    mode: 0755
+  become: yes
+  when: inventory_hostname == 'master01'
+
+#- name: copy ca-csr.json
+
+- name: Generate CA certificate and private key
+#  run_once: true
+  shell: cfssl gencert -initca /root/CA-config/ca-csr.json | cfssljson -bare ca
+#  delegate_to: localhost
+#  when: "'bars' in group_names"
+  when: inventory_hostname == 'master01'
+
+
+- name: Create CA-certs directory
+  file:
+    path: /root/CA-certs/
+    state: directory
+    mode: 0755
+  when: inventory_hostname == 'master01'
+
+#- name: copy
+#  copy:
+#    src: /home/ubuntu/ca.pem
+#    dest: /root/CA-certs/
+#    remote_src: yes
+#    owner: root
+#    group: root
+#    mode: 0755
+#  become: yes
+#  when: inventory_hostname == 'slave04'
+#
+#- name: copy
+#  copy:
+#    src: /home/ubuntu/ca-key.pem
+#    dest: /root/CA-certs/
+#    remote_src: yes
+#    owner: root
+#    group: root
+#    mode: 0755
+#  become: yes
+#  when: inventory_hostname == 'slave04'
+
+- name: move cert file to root directory
+  command: mv '{{ item }}' /root/CA-certs/
+  with_items:
+  - '/home/ubuntu/ca-key.pem'
+#  - '/home/ubuntu/ca-key.pem'
+  - '/home/ubuntu/ca.pem'
+#  - '/home/ubuntu/ca.pema'
+  become: yes
+  when: inventory_hostname == 'master01'
+
+- name: copy kubernetes-csr.json
+  copy:
+    src: files/kubernetes-csr.json
+    dest: /root/
+    owner: root
+    group: root
+    mode: 0755
+  when: inventory_hostname == 'master01'
+
+- name: generate the certificate and private key for etcd
+  shell: "cfssl gencert -ca=/root/CA-certs/ca.pem -ca-key=/root/CA-certs/ca-key.pem -config=/root/CA-config/ca-config.json -hostname={{ master01 }},{{ master02 }},{{ master03 }},127.0.0.1,kubernetes.default -profile=kubernetes /root/kubernetes-csr.json | cfssljson -bare kubernetes"
+  when: inventory_hostname == 'master01'
+
+- name: move kubernetes certs files to root directory
+  command: mv '{{ item }}' /root/CA-certs/
+  with_items:
+#  - '/home/ubuntu/kubernetes-key.pem'
+  - '/home/ubuntu/kubernetes-key.pem'
+#  - '/home/ubuntu/kubernetes.pem'
+  - '/home/ubuntu/kubernetes.pem'
+#  - '/home/ubuntu/kubernetes.csr'
+  - '/home/ubuntu/kubernetes.csr'
+#  become: yes
+  when: inventory_hostname == 'master01'
+
+- name: fetch certs files
+  fetch:
+    src: /root/CA-certs/{{ item }}
+    dest: /tmp/
+    flat: true
+  with_items:
+  - ca.pem
+  - kubernetes.pem
+  - kubernetes-key.pem
+  when: inventory_hostname == 'master01'
+
+- name: create a etcd directory on the masters
+  file:
+    path: '{{ item }}'
+    state: directory
+    mode: 0775
+  with_items:
+  - '/etc/etcd'
+  - '/var/lib/etcd'
+  when: inventory_hostname in groups['masters']
+
+- name: copy certs to all nodes
+  copy:
+    src: /tmp/{{ item }}
+    dest: /etc/etcd/
+  with_items:
+  - ca.pem
+  - kubernetes.pem
+  - kubernetes-key.pem
+  when: inventory_hostname in groups['masters']

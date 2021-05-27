@@ -1,0 +1,7 @@
+---
+- hosts: masters
+  gather_facts: yes
+  become: yes
+  remote_user: ubuntu
+  roles:
+  - kubernetes

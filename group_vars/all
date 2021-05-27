@@ -1,0 +1,7 @@
+master01: 10.191.0.151
+master02: 10.191.0.152
+master03: 10.191.0.153
+master04: 10.191.0.154
+docker_apt_repo_xenial: "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable"
+docker_version: "17.03.0~ce-0~ubuntu-xenial"
+haproxy: 10.191.0.154

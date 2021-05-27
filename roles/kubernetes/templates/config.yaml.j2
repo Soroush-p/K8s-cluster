@@ -1,0 +1,20 @@
+apiVersion: kubeadm.k8s.io/v1alpha3
+kind: ClusterConfiguration
+kubernetesVersion: stable
+apiServerCertSANs:
+- {{ virtualip }}
+controlPlaneEndpoint: "{{ virtualip }}:6443"
+etcd:
+  external:
+    endpoints:
+    - https://{{ master01 }}:2379
+    - https://{{ master02 }}:2379
+    - https://{{ master03 }}:2379
+    caFile: /etc/etcd/ca.pem
+    certFile: /etc/etcd/kubernetes.pem
+    keyFile: /etc/etcd/kubernetes-key.pem
+networking:
+  podSubnet: 10.30.0.0/24
+apiServerExtraArgs:
+  apiserver-count: "3"
+

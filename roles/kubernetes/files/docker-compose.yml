@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+     haproxy-keepalived:
+#       image: haproxy1
+       build:
+         context: ./
+         dockerfile: Dockerfile
+       restart: always
+       container_name: haproxy-keepalived
+       volumes:
+         - "../templates/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg"
+         - "../templates/keepalived.conf:/etc/keepalived/keepalived.conf"
+       privileged: true
+       cap_add: 
+         - ALL
+       network_mode: host

@@ -1,0 +1,33 @@
+- name: copy etcd binary to masters
+  copy:
+    src: files/etcd-v3.3.9-linux-amd64/{{ item }}
+    dest: /usr/local/bin/
+    mode : 755
+  with_items:
+  - etcd
+  - etcdctl
+  when: inventory_hostname in  groups['masters']
+
+- name: create etcd.service 
+  template:
+    src: templates/etcd.service.j2
+    dest: /etc/systemd/system/etcd.service
+  when: inventory_hostname in groups['masters']
+
+- name: Reload Daemon
+  systemd:
+    daemon_reload: yes
+    state: restarted
+    name: etcd
+  when: inventory_hostname in  groups['masters']
+
+- name: Enable and start etcd service 
+  systemd:
+    name: etcd.service
+    state: started
+    enabled: yes
+  when: inventory_hostname in  groups['masters']
+
+### check cluster health 
+##
+## etcdctl --ca-file=/etc/etcd/ca.pem --cert-file=/etc/etcd/kubernetes.pem --key-file=/etc/etcd/kubernetes-key.pem cluster-health

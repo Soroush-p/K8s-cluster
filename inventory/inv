@@ -1,0 +1,13 @@
+[masters]
+master01 localip=10.0.0.239 peerip1=10.0.0.190 peerip2=10.0.0.172
+master02 localip=10.0.0.190 peerip1=10.0.0.239 peerip2=10.0.0.172
+master03 localip=10.0.0.172 peerip1=10.0.0.239 peerip2=10.0.0.190
+
+[nodes]
+#Slave03
+#Slave02
+#Slave01
+
+[haproxy]
+#haproxy haproxy=10.191.0.154
+

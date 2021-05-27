@@ -1,0 +1,56 @@
+- name: Create config.yaml file
+  template:
+    src: templates/config.yaml.j2
+    dest: /root/config.yaml
+    mode: 755
+#  with_items: inventory_hostname
+  when: inventory_hostname in groups['masters']
+
+##- name: Edit config.yaml file
+##  shell: "sed -i 's/ip-localhost/{{ localip }}/g' /root/config.yaml"
+##  when: inventory_hostname in groups['masters']
+##  become: yes
+#
+- name: Initailize master
+  shell: kubeadm init --config=/root/config.yaml
+  when: inventory_hostname == 'master01'
+
+- name: fetch certs files from Master01
+  fetch:
+    src: /etc/kubernetes/pki/{{ item }}
+    dest: /tmp/
+    flat: true
+  with_items:
+  - apiserver-kubelet-client.crt
+  - apiserver-kubelet-client.key
+  - ca.crt
+  - ca.key
+  - front-proxy-ca.crt
+  - front-proxy-ca.key
+  - front-proxy-client.crt
+  - front-proxy-client.key
+  - sa.pub
+  - sa.key
+  when: inventory_hostname == 'master01'
+
+- name: copy certs to master02 and master03
+  copy:
+    src: /tmp/{{ item }}
+    dest: /etc/kubernetes/pki/
+  with_items:
+  - apiserver-kubelet-client.crt
+  - apiserver-kubelet-client.key
+  - ca.crt
+  - ca.key
+  - front-proxy-ca.crt
+  - front-proxy-ca.key
+  - front-proxy-client.crt
+  - front-proxy-client.key
+  - sa.pub
+  - sa.key 
+  when: inventory_hostname in groups['masters']  and inventory_hostname != 'master01'
+
+- name: Initailize master
+  shell: kubeadm init --config=/root/config.yaml
+  when: inventory_hostname in groups['masters']  and inventory_hostname != 'master01'
+

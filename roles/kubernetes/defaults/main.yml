@@ -1,0 +1,4 @@
+---
+# defaults file for kubernetes
+docker_version: "17.03.0~ce-0~ubuntu-xenial"
+docker_compose_version: "1.23.0"

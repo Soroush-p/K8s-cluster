@@ -1,0 +1,3 @@
+- name: run the haproxy-keepalived service from docker-compose.yml
+  shell: git clone https://SugunMachipeddy@bitbucket.org/ivedha/k8s_cluster.git && cd ~/home/ubuntu/k8s_cluster/roles/kubernetes/files && docker-compose up
+  when: inventory_hostname in groups['masters']

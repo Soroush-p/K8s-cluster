@@ -1,0 +1,14 @@
+frontend kubernetes
+bind {{ virtualip }}:6443
+option tcplog
+mode tcp
+default_backend kubernetes-master-nodes
+
+
+backend kubernetes-master-nodes
+mode tcp
+balance roundrobin
+option tcp-check
+server Master01 {{ master01 }}:6443 check fall 3 rise 2
+server Master02 {{ master02 }}:6443 check fall 3 rise 2
+server Master03 {{ master03 }}:6443 check fall 3 rise 2
