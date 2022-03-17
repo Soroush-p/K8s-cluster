@@ -13,33 +13,40 @@
       - net-tools
       - wget
       - telnet
-      - yum-util
+      - yum-utils
       - device-mapper-persistent-data
       - lvm2
       - nfs-utils
     state: present
 
-- name: Add multiple repositories
-  yum_repository:
-      name: docker
-          description: docker yum repo
-	      baseurl: https://download.docker.com/linux/centos/docker-ce.repo
-	      gpgcheck: no
+- name: add Docker repo
+  shell:  yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+  become: yes
 
-- name: Update Package Cache (yum/Amazon)
-    tags: always
-      yum:
-	update_cache: yes
 
-- name: install Docker-ce
-  yum:
-    name: docker-ce-18.06.2.ce
-    state: present
+#- name: Add Docker repositorie
+#  yum_repository:
+#    name: docker
+#    description: Docker YUM repo
+#    baseurl: https://download.docker.com/linux/centos/docker-ce.repo
+#    gpgcheck: no
+
+#- name: Update Package Cache (yum/Amazon)
+#    yum:
+#    update_cache: yes
+
+#- name: install Docker-ce
+#  yum:
+#    name: docker-ce-18.06.2.ce
+#    state: present
 
 - name: Creates directory docker
-  file:
+  ansible.builtin.file:
     path: /etc/docker
-      state: directory
+    state: directory
+    mode: '0755'
 
 - name: copy daemon.json
   copy:
@@ -48,9 +55,10 @@
     mode : 755
 
 - name: Creates directory docker
-  file:
+  ansible.builtin.file:
     path: /etc/systemd/system/docker.service.d
-      state: directory
+    state: directory
+    mode: '0755'
 
 - name: Start and enable Docker systemd service
   service: name=docker state=started enabled=yes
@@ -79,16 +87,15 @@
 - name: disable SELinux
   shell: sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
  
-- name: Add kubernetes repositories
-  yum_repository:
-      name: kubernetes
-          description: kubernetes yum repo
-	      baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-	      gpgcheck: no
+#- name: Update Package Cache (yum/Amazon)
+#    yum:
+#      update_cache: yes
+- name: copy daemon.json
+  copy:
+    src: files/kubernetes.repo
+    dest: /etc/yum.repos.d/
+    mode : 755
 
-- name: Update Package Cache (yum/Amazon)
-    yum:
-      update_cache: yes
 
 - name: install kubeadm kubelet kubectl
   yum:

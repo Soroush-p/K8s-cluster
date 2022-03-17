@@ -1,0 +1,56 @@
+- name: Creates directory /etc/kubernetes
+  ansible.builtin.file:
+    path: /etc/kubernetes
+    state: directory
+    mode: '0655'
+
+- name: copy audit-policy,yaml
+  copy:
+    src: files/audit-policy.yaml
+    dest: /etc/kubernetes/
+    mode : 755
+
+- name: copy firewall rules
+  copy:
+    src: files/firewalld_rules
+    dest: /root/
+    mode : 755
+
+- name: apply firewalld rules
+  shell: /bin/bash firewalld_rules
+
+- name: Creates directory /var/log/kubernetes/audit
+  ansible.builtin.file:
+    path: /var/log/kubernetes/audit
+    state: directory
+    mode: '0655'
+
+- name: Create config.yaml file
+  template:
+    src: templates/kubeadm-config.yml.j2
+    dest: /root/kubeadm-config.yaml
+    mode: 755
+
+- name: Initailize master
+  shell: kubeadm init --config=/root/kubeadm-config.yaml
+
+- name: Make .kube directory for configFile
+  shell: mkdir -p $HOME/.kube
+
+- name:  copy /etc/kubernetes/admin.conf
+  shell:  cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+
+- name: Chage permision to root
+  shell:  chown $(id -u):$(id -g) $HOME/.kube/config
+
+- name: Make master node schedulable
+  shell: kubectl taint nodes --all node-role.kubernetes.io/master-
+
+- name: Download Calico networking manifest
+  shell: curl https://projectcalico.docs.tigera.io/manifests/calico.yaml -O
+  become: yes
+
+- name: Apply the manifest
+  shell: kubectl apply -f calico.yaml
+
+

@@ -1,7 +1,9 @@
 [masters]
-master01 localip=10.0.0.239 peerip1=10.0.0.190 peerip2=10.0.0.172
-master02 localip=10.0.0.190 peerip1=10.0.0.239 peerip2=10.0.0.172
-master03 localip=10.0.0.172 peerip1=10.0.0.239 peerip2=10.0.0.190
+#k8s2 localip=172.16.0.105
+k8s1 localip=172.16.0.104
+#master01 localip=10.0.0.239 peerip1=10.0.0.190 peerip2=10.0.0.172
+#master02 localip=10.0.0.190 peerip1=10.0.0.239 peerip2=10.0.0.172
+#master03 localip=10.0.0.172 peerip1=10.0.0.239 peerip2=10.0.0.190
 
 [nodes]
 #Slave03
