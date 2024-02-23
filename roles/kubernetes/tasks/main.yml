@@ -1,13 +1,4 @@
 ---
 # tasks file for kubernetes
-#- include: dependencies.yml
-#- include: prepare-certificates.yml
-#- include: configure-etcd.yml
-# haproxy should be configured first to kubelet be able to communicate with kube-api
-###- include: installHAproxy.yml
-#- include: initializeMasters.yml
-#- include: initializeWorkers.yml
-## restart kubelet daemon after deploying pod network to take changes
-#- include: deployFlannel.yml
-- include: haproxy-keepalived.yml
-#- include: reconfigureProxy.yml
+- include: dependencies.yml
+- include: master.yml
